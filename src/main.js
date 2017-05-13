@@ -3,10 +3,6 @@
 import Vue from 'vue'
 import App from './App'
 
-import 'vue-virtual-scroller/dist/vue-virtual-scroller.css'
-import VueVirtualScroller from 'vue-virtual-scroller/dist/vue-virtual-scroller'
-Vue.use(VueVirtualScroller)
-
 Vue.config.productionTip = false
 
 /* eslint-disable no-new */

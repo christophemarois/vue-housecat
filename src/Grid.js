@@ -1,9 +1,8 @@
-export default class Housecat {
+export default class Grid {
   constructor (opts = {}) {
     Object.assign(this, {
       containerWidth: 800,
       gutter: 5,
-      images: [],
       rowHeight: 225,
       squeezeRatio: 2 / 3
     }, opts)
@@ -54,7 +53,8 @@ export default class Housecat {
         row = [image]
       }
 
-      // If this is the last image, close row
+      // If this is the last image, close row, regardless of it has
+      // been appended to a row or put into a new row of its own
       if (isLastImage) {
         rows.push(this.scaleRowImages(row))
       }
