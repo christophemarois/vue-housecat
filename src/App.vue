@@ -5,25 +5,31 @@
   v-resize:debounce.100="resize"
   class="housecat"
   :class="{ 'housecat__is-resizing': isResizing }"
+  :style="{ 'margin-top': (-1 * gutter) + 'px' }"
 >
   <virtual-scroller
     page-mode
     :items="housecat.rows"
-    :item-height="rowHeight"
+    :item-height="rowHeight + gutter"
     class="scroller"
   >
     <template scope="props">
       <div
-        :style="{ height: rowHeight + 'px' }"
+        :style="{
+          height: rowHeight + 'px',
+          'margin-top': gutter + 'px'
+        }"
         class="row"
       >
         <div
-          v-for="image in props.item"
+          v-for="image, i in props.item"
           :key="image.id"
           :style="{
             width: image.fitWidth + 'px',
             height: rowHeight + 'px',
-            'background-image': `url(http://placehold.it/${parseInt(image.scaledWidth)}x${rowHeight})`
+            'margin-right': (i === (props.item.length - 1) || props.item.length === 1 ? 0 : gutter + 'px'),
+            'background-color': image.color,
+            'background-image': `url(http://placehold.it/${parseInt(fixedThumbnails ? image.scaledWidth : image.fitWidth)}x${rowHeight})`
           }"
           class="image"
         ></div>
@@ -35,6 +41,7 @@
 
 <script>
 import Resize from 'vue-resize-directive'
+
 import Housecat from './Housecat'
 
 export default {
@@ -43,7 +50,13 @@ export default {
   },
 
   data () {
-    const housecat = new Housecat()
+    // When enabled, will only load 1 size of thumbnail per row size.
+    // Results in better performance, O(n) server load, but bad quality
+    // in some intense stretching cases.
+    const fixedThumbnails = true
+
+    const gutter = 5
+    const housecat = new Housecat({ gutter })
 
     housecat.images = Array(250).fill().map(image => {
       const id = Math.random().toString(16).slice(2)
@@ -55,6 +68,8 @@ export default {
     })
 
     return {
+      fixedThumbnails,
+      gutter,
       housecat,
       isResizing: false,
       rowHeight: 223,
@@ -72,9 +87,9 @@ export default {
 
     resize (el) {
       const { paddingLeft: left, paddingRight: right } = getComputedStyle(el)
-      const width = el.clientWidth - parseFloat(left) - parseFloat(right)
+      this.housecat.containerWidth = el.clientWidth - parseFloat(left) - parseFloat(right)
+      this.housecat.computeRows()
 
-      this.housecat.computeRows(width)
       this.isResizing = false
     }
   }
@@ -99,18 +114,11 @@ body {
   visibility: hidden;
 }
 
-.row {
-  margin-bottom: 5px;
-}
-
 .image {
   float: left;
+  max-width: 100%;
   background-size: cover;
   background-position: center;
   background-color: rgba(0, 0, 0, 0.05);
-}
-
-.image + .image {
-  margin-left: 5px;
 }
 </style>
